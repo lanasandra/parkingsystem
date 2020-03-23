@@ -1,61 +1,81 @@
 package com.parkit.parkingsystem.model;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 public class Ticket {
-    private int id;
-    private ParkingSpot parkingSpot;
-    private String vehicleRegNumber;
-    private double price;
-    private Date inTime;
-    private Date outTime;
+	private int id;
+	private ParkingSpot parkingSpot;
+	private String vehicleRegNumber;
+	private double price;
+	private LocalDateTime inTimeDay;
+	private LocalDateTime outTimeDay;
+	private boolean isLoyalCustomer;
 
-    public int getId() {
-        return id;
-    }
+	public void setId(int id) {
+		this.id = id;
+	}
 
-    public void setId(int id) {
-        this.id = id;
-    }
+	public int getId() {
+		return id;
+	}
 
-    public ParkingSpot getParkingSpot() {
-        return parkingSpot;
-    }
+	public void setParkingSpot(ParkingSpot parkingSpot) {
+		this.parkingSpot = parkingSpot;
+	}
 
-    public void setParkingSpot(ParkingSpot parkingSpot) {
-        this.parkingSpot = parkingSpot;
-    }
+	public ParkingSpot getParkingSpot() {
+		return parkingSpot;
+	}
 
-    public String getVehicleRegNumber() {
-        return vehicleRegNumber;
-    }
+	public void setVehicleRegNumber(String vehicleRegNumber) {
+		this.vehicleRegNumber = vehicleRegNumber;
+	}
 
-    public void setVehicleRegNumber(String vehicleRegNumber) {
-        this.vehicleRegNumber = vehicleRegNumber;
-    }
+	public String getVehicleRegNumber() {
+		return vehicleRegNumber;
+	}
 
-    public double getPrice() {
-        return price;
-    }
+	public void setPrice(double price) {
+		this.price = (double) Math.round(price * 100) / 100;
+	}
 
-    public void setPrice(double price) {
-        this.price = price;
-    }
+	public double getPrice() {
+		return price;
+	}
 
-    public Date getInTime() {
-        return inTime;
-    }
+	public void setInTimeDay(LocalDateTime inTimeDay) {
+		this.inTimeDay = inTimeDay;
+	}
 
-    public void setInTime(Date inTime) {
-        this.inTime = inTime;
-    }
+	public LocalDateTime getInTimeDay() {
+		return inTimeDay;
+	}
 
-    public Date getOutTime() {
-        return outTime;
-    }
+	public void setOutTimeDay(LocalDateTime outTimeDay) {
+		this.outTimeDay = outTimeDay;
+	}
 
-    public void setOutTime(Date outTime) {
-        this.outTime = outTime;
-    }
+	public LocalDateTime getOutTimeDay() {
+		return outTimeDay;
+	}
+
+	public void setInTimeDay(Timestamp timestamp) {
+		this.setInTimeDay(timestamp.toLocalDateTime());
+
+	}
+
+	public void setOutTimeDay(Timestamp timestamp) {
+		this.setOutTimeDay(timestamp.toLocalDateTime());
+
+	}
+
+	public void setLoyalCustomer(boolean loyalCustomer) {
+		isLoyalCustomer = loyalCustomer;
+	}
+
+	public boolean isLoyalCustomer() {
+		return isLoyalCustomer;
+	}
+
 }

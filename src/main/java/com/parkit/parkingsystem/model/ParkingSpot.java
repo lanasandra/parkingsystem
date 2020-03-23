@@ -3,50 +3,50 @@ package com.parkit.parkingsystem.model;
 import com.parkit.parkingsystem.constants.ParkingType;
 
 public class ParkingSpot {
-    private int number;
-    private ParkingType parkingType;
-    private boolean isAvailable;
+	private int number;
+	private ParkingType parkingType;
+	private boolean isAvailable;
+	private String vehicleRegNumber;
 
-    public ParkingSpot(int number, ParkingType parkingType, boolean isAvailable) {
-        this.number = number;
-        this.parkingType = parkingType;
-        this.isAvailable = isAvailable;
-    }
+	public ParkingSpot() {
 
-    public int getId() {
-        return number;
-    }
+	}
 
-    public void setId(int number) {
-        this.number = number;
-    }
+	public ParkingSpot(int number, ParkingType parkingType, boolean isAvailable) {
+		this.number = number;
+		this.parkingType = parkingType;
+		this.isAvailable = isAvailable;
+	}
 
-    public ParkingType getParkingType() {
-        return parkingType;
-    }
+	public int getId() {
+		return number;
+	}
 
-    public void setParkingType(ParkingType parkingType) {
-        this.parkingType = parkingType;
-    }
+	public void setId(int number) {
+		this.number = number;
+	}
 
-    public boolean isAvailable() {
-        return isAvailable;
-    }
+	public ParkingType getParkingType() {
+		return parkingType;
+	}
 
-    public void setAvailable(boolean available) {
-        isAvailable = available;
-    }
+	public void setParkingType(ParkingType parkingType) {
+		this.parkingType = parkingType;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ParkingSpot that = (ParkingSpot) o;
-        return number == that.number;
-    }
+	public void setAvailable(boolean available) {
+		isAvailable = available;
+	}
 
-    @Override
-    public int hashCode() {
-        return number;
-    }
+	public boolean isAvailable() {
+		return isAvailable;
+	}
+
+	public void setVehicleRegNumber(String vehicleRegNumber) {
+		this.vehicleRegNumber = vehicleRegNumber;
+	}
+
+	public String getVehicleRegNumber() {
+		return vehicleRegNumber;
+	}
 }

@@ -1,127 +1,564 @@
 package com.parkit.parkingsystem;
 
-import com.parkit.parkingsystem.constants.Fare;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.time.LocalDateTime;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
 import com.parkit.parkingsystem.constants.ParkingType;
 import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
 import com.parkit.parkingsystem.service.FareCalculatorService;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.Date;
 
 public class FareCalculatorServiceTest {
 
-    private static FareCalculatorService fareCalculatorService;
-    private Ticket ticket;
+	private static FareCalculatorService fareCalculatorService;
+	private Ticket ticket;
 
-    @BeforeAll
-    private static void setUp() {
-        fareCalculatorService = new FareCalculatorService();
-    }
+	@BeforeAll
+	private static void setUp() {
+		fareCalculatorService = new FareCalculatorService();
 
-    @BeforeEach
-    private void setUpPerTest() {
-        ticket = new Ticket();
-    }
+	}
 
-    @Test
-    public void calculateFareCar(){
-        Date inTime = new Date();
-        inTime.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );
-        Date outTime = new Date();
-        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
+	@BeforeEach
+	private void setUpPerTest() {
+		ticket = new Ticket();
 
-        ticket.setInTime(inTime);
-        ticket.setOutTime(outTime);
-        ticket.setParkingSpot(parkingSpot);
-        fareCalculatorService.calculateFare(ticket);
-        assertEquals(ticket.getPrice(), Fare.CAR_RATE_PER_HOUR);
-    }
+	}
 
-    @Test
-    public void calculateFareBike(){
-        Date inTime = new Date();
-        inTime.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );
-        Date outTime = new Date();
-        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE,false);
+	@DisplayName("Calculate Fare of Bike or Car")
+	@Test
+	public void calculate_Fare_Car() {
 
-        ticket.setInTime(inTime);
-        ticket.setOutTime(outTime);
-        ticket.setParkingSpot(parkingSpot);
-        fareCalculatorService.calculateFare(ticket);
-        assertEquals(ticket.getPrice(), Fare.BIKE_RATE_PER_HOUR);
-    }
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 9, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 17, 45);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
 
-    @Test
-    public void calculateFareUnkownType(){
-        Date inTime = new Date();
-        inTime.setTime( System.currentTimeMillis() - (  60 * 60 * 1000) );
-        Date outTime = new Date();
-        ParkingSpot parkingSpot = new ParkingSpot(1, null,false);
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
 
-        ticket.setInTime(inTime);
-        ticket.setOutTime(outTime);
-        ticket.setParkingSpot(parkingSpot);
-        assertThrows(NullPointerException.class, () -> fareCalculatorService.calculateFare(ticket));
-    }
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(11.63);
 
-    @Test
-    public void calculateFareBikeWithFutureInTime(){
-        Date inTime = new Date();
-        inTime.setTime( System.currentTimeMillis() + (  60 * 60 * 1000) );
-        Date outTime = new Date();
-        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE,false);
+	}
 
-        ticket.setInTime(inTime);
-        ticket.setOutTime(outTime);
-        ticket.setParkingSpot(parkingSpot);
-        assertThrows(IllegalArgumentException.class, () -> fareCalculatorService.calculateFare(ticket));
-    }
+	@DisplayName("Calculate Fare of Bike or Car")
+	@Test
+	public void calculate_Fare_Bike() {
 
-    @Test
-    public void calculateFareBikeWithLessThanOneHourParkingTime(){
-        Date inTime = new Date();
-        inTime.setTime( System.currentTimeMillis() - (  45 * 60 * 1000) );//45 minutes parking time should give 3/4th parking fare
-        Date outTime = new Date();
-        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE,false);
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 9, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 17, 45);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
 
-        ticket.setInTime(inTime);
-        ticket.setOutTime(outTime);
-        ticket.setParkingSpot(parkingSpot);
-        fareCalculatorService.calculateFare(ticket);
-        assertEquals((0.75 * Fare.BIKE_RATE_PER_HOUR), ticket.getPrice() );
-    }
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
 
-    @Test
-    public void calculateFareCarWithLessThanOneHourParkingTime(){
-        Date inTime = new Date();
-        inTime.setTime( System.currentTimeMillis() - (  45 * 60 * 1000) );//45 minutes parking time should give 3/4th parking fare
-        Date outTime = new Date();
-        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(7.75);
+	}
 
-        ticket.setInTime(inTime);
-        ticket.setOutTime(outTime);
-        ticket.setParkingSpot(parkingSpot);
-        fareCalculatorService.calculateFare(ticket);
-        assertEquals( (0.75 * Fare.CAR_RATE_PER_HOUR) , ticket.getPrice());
-    }
+	@DisplayName("Calculate Fare of UnknownType")
+	@Test
+	public void calculate_Fare_UnkownType() {
 
-    @Test
-    public void calculateFareCarWithMoreThanADayParkingTime(){
-        Date inTime = new Date();
-        inTime.setTime( System.currentTimeMillis() - (  24 * 60 * 60 * 1000) );//24 hours parking time should give 24 * parking fare per hour
-        Date outTime = new Date();
-        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 9, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 17, 45);
+		ParkingSpot parkingSpot = new ParkingSpot(1, null, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
 
-        ticket.setInTime(inTime);
-        ticket.setOutTime(outTime);
-        ticket.setParkingSpot(parkingSpot);
-        fareCalculatorService.calculateFare(ticket);
-        assertEquals( (24 * Fare.CAR_RATE_PER_HOUR) , ticket.getPrice());
-    }
+		// THEN
+		assertThrows(NullPointerException.class, () -> fareCalculatorService.calculateFare(ticket));
+	}
 
+	@DisplayName("Calculate Fare of Bike or Car with InTimeDay value is defined after ouTimeDay value")
+	@Test
+	public void calculate_Fare_Car_With_Future_InTimeDay() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 17, 45);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 9, 30);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+
+		// THEN
+		assertThrows(IllegalArgumentException.class, () -> fareCalculatorService.calculateFare(ticket));
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car with InTimeDay value is defined after ouTimeDay value")
+	@Test
+	public void calculate_Fare_Bike_With_Future_InTimeDay() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 17, 45);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 9, 30);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+
+		// THEN
+		assertThrows(IllegalArgumentException.class, () -> fareCalculatorService.calculateFare(ticket));
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car with less than one hour of Parking Time")
+	@Test
+	public void calculate_Fare_Car_With_Less_Than_OneHour_ParkingTime() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 10, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 11, 25);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(0.63);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car with less than one hour of Parking Time")
+	@Test
+	public void calculate_Fare_Bike_With_Less_Than_OneHour_ParkingTime() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 10, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 11, 25);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(0.42);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car with less than a half hour of Parking Time")
+	@Test
+	public void calculate_Fare_Car_With_Less_Than_OneHalfHour_ParkingTime() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 10, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 10, 55);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(0);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car with less than a half hour of Parking Time")
+	@Test
+	public void calculate_Fare_Bike_With_Less_Than_OneHalfHour_ParkingTime() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 10, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 10, 55);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(0);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car with more than a day of Parking Time")
+	@Test
+	public void calculate_Fare_Car_With_More_Than_A_Day_ParkingTime() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 9, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 16, 10, 30);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(36.75);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car with more than a day of Parking Time")
+	@Test
+	public void calculate_Fare_Bike_With_More_Than_A_Day_ParkingTime() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 9, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 16, 10, 30);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(24.50);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car between two different months")
+	@Test
+	public void calculate_Fare_Car_Between_Two_Months() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 30, 9, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 05, 02, 10, 30);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(72.75);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car between two different months")
+	@Test
+	public void calculate_Fare_Bike_Between_Two_Months() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 30, 9, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 05, 02, 10, 30);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(48.50);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car between two different years")
+	@Test
+	public void calculate_Fare_Car_Between_Two_Years() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 12, 30, 20, 45);
+		LocalDateTime outTimeDay = LocalDateTime.of(2021, 01, 01, 05, 55);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(49);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car between two different years")
+	@Test
+	public void calculate_Fare_Bike_Between_Two_Years() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 12, 30, 20, 45);
+		LocalDateTime outTimeDay = LocalDateTime.of(2021, 01, 01, 05, 55);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(32.67);
+	}
+
+	@DisplayName("Calculate Fare when Customer is loyal")
+	@Test
+	public void calculate_Fare_Car_For_Loyal_Customer() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 9, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 17, 45);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		boolean loyalCustomer = true;
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+		ticket.setLoyalCustomer(loyalCustomer);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(11.04);
+
+	}
+
+	@DisplayName("Calculate Fare when Customer is loyal")
+	@Test
+	public void calculate_Fare_Bike_For_Loyal_Customer() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 9, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 17, 45);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
+		boolean loyalCustomer = true;
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+		ticket.setLoyalCustomer(loyalCustomer);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(7.36);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car with less than one hour of Parking Time when Customer is loyal")
+	@Test
+	public void calculate_Fare_Car_With_Less_Than_One_Hour_ParkingTime_For_Loyal_Customer() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 10, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 11, 25);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		boolean loyalCustomer = true;
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+		ticket.setLoyalCustomer(loyalCustomer);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(0.59);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car with less than one hour of Parking Time when Customer is loyal")
+	@Test
+	public void calculate_Fare_Bike_With_Less_Than_OneHour_ParkingTime_For_Loyal_Customer() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 10, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 11, 25);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
+		boolean loyalCustomer = true;
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+		ticket.setLoyalCustomer(loyalCustomer);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(0.40);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car with less than a half hour of Parking Time, when Customer is loyal")
+	@Test
+	public void calculate_Fare_Car_With_Less_Than_OneHalfHour_ParkingTime_For_Loyal_Customer() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 10, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 10, 55);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		boolean loyalCustomer = true;
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+		ticket.setLoyalCustomer(loyalCustomer);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(0);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car with less than a half hour of Parking Time, when Customer is loyal")
+	@Test
+	public void calculate_Fare_Bike_With_Less_Than_OneHalfHour_ParkingTime_For_Loyal_Custome() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 10, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 15, 10, 55);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
+		boolean loyalCustomer = true;
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+		ticket.setLoyalCustomer(loyalCustomer);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(0);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car with more than a day of Parking Time, when Customer is loyal")
+	@Test
+	public void calculate_Fare_Car_With_More_Than_ADay_ParkingTime_For_Loyal_Customer() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 9, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 16, 10, 30);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		boolean loyalCustomer = true;
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+		ticket.setLoyalCustomer(loyalCustomer);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(34.91);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car with more than a day of Parking Time, when Customer is loyal")
+	@Test
+	public void calculate_Fare_Bike_With_More_Than_ADay_ParkingTime_For_Loyal_Customer() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 15, 9, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 04, 16, 10, 30);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
+		boolean loyalCustomer = true;
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+		ticket.setLoyalCustomer(loyalCustomer);
+
+		// THEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(23.28);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car between two different months, when Customer is loyal")
+	@Test
+	public void calculate_Fare_Car_Between_Two_Months_For_Loyal_Customer() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 30, 9, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 05, 02, 10, 30);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		boolean loyalCustomer = true;
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+		ticket.setLoyalCustomer(loyalCustomer);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// GIVEN
+		assertThat(ticket.getPrice()).isEqualTo(69.11);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car between two different months, when Customer is loyal")
+	@Test
+	public void calculate_Fare_Bike_Between_Two_Months_For_Loyal_Customer() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 04, 30, 9, 30);
+		LocalDateTime outTimeDay = LocalDateTime.of(2020, 05, 02, 10, 30);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
+		boolean loyalCustomer = true;
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+		ticket.setLoyalCustomer(loyalCustomer);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// GIVEN
+		assertThat(ticket.getPrice()).isEqualTo(46.08);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car between two different years,when Customer is loyal")
+	@Test
+	public void calculate_Fare_Car_Between_Two_Years_For_Loyal_Customer() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 12, 30, 20, 45);
+		LocalDateTime outTimeDay = LocalDateTime.of(2021, 01, 01, 05, 55);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+		boolean loyalCustomer = true;
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+		ticket.setLoyalCustomer(loyalCustomer);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(46.55);
+	}
+
+	@DisplayName("Calculate Fare of Bike or Car between two different years,when Customer is loyal")
+	@Test
+	public void calculate_Fare_Bike_Between_Two_Years_For_Loyal_Customer() {
+
+		// GIVEN
+		LocalDateTime inTimeDay = LocalDateTime.of(2020, 12, 30, 20, 45);
+		LocalDateTime outTimeDay = LocalDateTime.of(2021, 01, 01, 05, 55);
+		ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.BIKE, false);
+		boolean loyalCustomer = true;
+		ticket.setInTimeDay(inTimeDay);
+		ticket.setOutTimeDay(outTimeDay);
+		ticket.setParkingSpot(parkingSpot);
+		ticket.setLoyalCustomer(loyalCustomer);
+
+		// WHEN
+		fareCalculatorService.calculateFare(ticket);
+
+		// THEN
+		assertThat(ticket.getPrice()).isEqualTo(31.03);
+	}
 }
